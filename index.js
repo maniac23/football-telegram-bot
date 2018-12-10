@@ -126,32 +126,6 @@ bot.onText(/\/start/, msg => {
   });
 });
 
-// bot.onText(/\/pl_standings/, msg => {
-//   getPLStandings().then(res => {
-//     const message = res.join(' \n');
-//     bot.sendMessage(msg.chat.id, message, {
-//       parse_mode: 'HTML'
-//     });
-//   });
-// });
-
-// bot.onText(/\/pl_today_games/, msg => {
-//   getPLTodayGames().then(res => {
-//     if (res) {
-//       const message = res.join(' \n');
-//       bot.sendMessage(msg.chat.id, message, {
-//         parse_mode: 'HTML'
-//       });
-//     } else {
-//       bot.sendMessage(
-//         msg.chat.id,
-//         "Unfortunately there's no Premier League games today"
-//       );
-//       bot.sendSticker(msg.chat.id, 'CAADAgADAQADjM_pG1m6VaBWgHPBAg');
-//     }
-//   });
-// });
-
 function getPLStandings() {
   const url = 'https://api.football-data.org/v2/competitions/PL/standings';
   return axios({
