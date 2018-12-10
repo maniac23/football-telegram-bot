@@ -80,21 +80,37 @@ bot.on('callback_query', callbackQuery => {
         }
       });
       break;
+    case 'serie_a':
+      bot.sendMessage(msg.chat.id, 'Got it! What do you want to know?', {
+        reply_markup: {
+          inline_keyboard: [
+            [
+              {
+                text: 'Today games',
+                callback_data: 'serie_a_today_games'
+              },
+              {
+                text: 'Standings',
+                callback_data: 'serie_a_standings'
+              },
+              {
+                text: 'Top scorers',
+                callback_data: 'serie_a_top'
+              }
+            ]
+          ]
+        }
+      });
+      break;
     case 'premier_league_standings':
-      getPLStandings().then(res => {
-        const message = res.join(' \n');
-        bot.sendMessage(msg.chat.id, message, {
-          parse_mode: 'HTML'
-        });
+      getStandings('PL').then(res => {
+        sendFormattedMessage(res, msg.chat.id);
       });
       break;
     case 'premier_league_today_games':
-      getPLTodayGames().then(res => {
+      getTodayGames('PL').then(res => {
         if (res) {
-          const message = res.join(' \n');
-          bot.sendMessage(msg.chat.id, message, {
-            parse_mode: 'HTML'
-          });
+          sendFormattedMessage(res, msg.chat.id);
         } else {
           bot.sendMessage(
             msg.chat.id,
@@ -105,12 +121,37 @@ bot.on('callback_query', callbackQuery => {
       });
       break;
     case 'premier_league_top':
-      getPLTopScorers().then(scorers => {
-        if (scorers) {
-          const message = scorers.join(' \n');
-          bot.sendMessage(msg.chat.id, message, { parse_mode: 'HTML' });
+      getTopScorers('PL').then(res => {
+        if (res) {
+          sendFormattedMessage(res, msg.chat.id);
         }
       });
+      break;
+    case 'serie_a_today_games':
+      getTodayGames('SA').then(res => {
+        if (res) {
+          sendFormattedMessage(res, msg.chat.id);
+        } else {
+          bot.sendMessage(
+            msg.chat.id,
+            "Unfortunately there's no Premier League games today"
+          );
+          bot.sendSticker(msg.chat.id, 'CAADAgADAQADjM_pG1m6VaBWgHPBAg');
+        }
+      });
+      break;
+    case 'serie_a_standings':
+      getStandings('SA').then(res => {
+        sendFormattedMessage(res, msg.chat.id);
+      });
+      break;
+    case 'serie_a_top':
+      getTopScorers('SA').then(res => {
+        if (res) {
+          sendFormattedMessage(res, msg.chat.id);
+        }
+      });
+      break;
   }
 
   bot.answerCallbackQuery(callbackQuery.id);
@@ -126,8 +167,15 @@ bot.onText(/\/start/, msg => {
   });
 });
 
-function getPLStandings() {
-  const url = 'https://api.football-data.org/v2/competitions/PL/standings';
+function sendFormattedMessage(res, chatId) {
+  const message = res.join(' \n');
+  bot.sendMessage(chatId, message, {
+    parse_mode: 'HTML'
+  });
+}
+
+function getStandings(competition) {
+  const url = `https://api.football-data.org/v2/competitions/${competition}/standings`;
   return axios({
     method: 'get',
     url,
@@ -144,9 +192,9 @@ function getPLStandings() {
   });
 }
 
-function getPLTodayGames() {
+function getTodayGames(competition) {
   const today = new Date().toISOString().split('T')[0];
-  const url = `https://api.football-data.org/v2/competitions/PL/matches?dateFrom=${today}&dateTo=${today}`;
+  const url = `https://api.football-data.org/v2/competitions/${competition}/matches?dateFrom=${today}&dateTo=${today}`;
   return axios({
     method: 'get',
     url,
@@ -167,8 +215,8 @@ function getPLTodayGames() {
     }
   });
 }
-function getPLTopScorers() {
-  const url = 'https://api.football-data.org/v2/competitions/PL/scorers';
+function getTopScorers(competition) {
+  const url = `https://api.football-data.org/v2/competitions/${competition}/scorers`;
   return axios({
     method: 'get',
     url,
